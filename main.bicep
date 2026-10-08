@@ -40,6 +40,9 @@ resource spoke1Vnet 'Microsoft.Network/virtualNetworks@2024-05-01' = {
         name: 'snet-web'
         properties: {
           addressPrefix: '10.1.1.0/24'
+           networkSecurityGroup: {
+            id: nsgWeb.id
+          }
         }
       }
     ]
@@ -156,6 +159,50 @@ resource nsgApp 'Microsoft.Network/networkSecurityGroups@2024-05-01' = {
           destinationApplicationSecurityGroups: [
             {
               id: asgApp.id
+            }
+          ]
+          destinationPortRange: '22'
+        }
+      }
+      {
+        name: 'Deny-VNet-Inbound'
+        properties: {
+          priority: 4000
+          direction: 'Inbound'
+          access: 'Deny'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: '*'
+          destinationPortRange: '*'
+        }
+      }
+    ]
+  }
+}
+
+resource asgWeb 'Microsoft.Network/applicationSecurityGroups@2024-05-01' = {
+  name: 'asg-web'
+  location: location
+}
+
+resource nsgWeb 'Microsoft.Network/networkSecurityGroups@2024-05-01' = {
+  name: 'nsg-web'
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'Allow-Bastion-SSH'
+        properties: {
+          priority: 100
+          direction: 'Inbound'
+          access: 'Allow'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          sourceAddressPrefix: '10.0.1.0/26'
+          destinationApplicationSecurityGroups: [
+            {
+              id: asgWeb.id
             }
           ]
           destinationPortRange: '22'
