@@ -43,6 +43,9 @@ resource spoke1Vnet 'Microsoft.Network/virtualNetworks@2024-05-01' = {
            networkSecurityGroup: {
             id: nsgWeb.id
           }
+           routeTable: {
+            id: rtSpoke1.id
+          }
         }
       }
     ]
@@ -65,6 +68,9 @@ resource spoke2Vnet 'Microsoft.Network/virtualNetworks@2024-05-01' = {
           addressPrefix: '10.2.1.0/24'
           networkSecurityGroup: {
             id: nsgApp.id
+          }
+          routeTable: {
+            id: rtSpoke2.id
           }
         }
       }
@@ -219,6 +225,40 @@ resource nsgWeb 'Microsoft.Network/networkSecurityGroups@2024-05-01' = {
           sourceAddressPrefix: 'VirtualNetwork'
           destinationAddressPrefix: '*'
           destinationPortRange: '*'
+        }
+      }
+    ]
+  }
+}
+
+resource rtSpoke1 'Microsoft.Network/routeTables@2024-05-01' = {
+  name: 'rt-spoke1'
+  location: location
+  properties: {
+    routes: [
+      {
+        name: 'to-spoke2'
+        properties: {
+          addressPrefix: '10.2.0.0/16'
+          nextHopType: 'VirtualAppliance'
+          nextHopIpAddress: '10.0.2.4'
+        }
+      }
+    ]
+  }
+}
+
+resource rtSpoke2 'Microsoft.Network/routeTables@2024-05-01' = {
+  name: 'rt-spoke2'
+  location: location
+  properties: {
+    routes: [
+      {
+        name: 'to-spoke1'
+        properties: {
+          addressPrefix: '10.1.0.0/16'
+          nextHopType: 'VirtualAppliance'
+          nextHopIpAddress: '10.0.2.4'
         }
       }
     ]
