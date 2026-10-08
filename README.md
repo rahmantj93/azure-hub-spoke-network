@@ -41,3 +41,18 @@ Deployed once to Central India with a test VM in spoke 1, checked, then deleted.
 - Effective routes on the spoke 1 VM: 10.0.0.0/16 via **VNet peering**, and 10.2.0.0/16 via the **User** route `to-spoke2`.
 - The `to-spoke2` route showed next hop type **None**, because no appliance exists at 10.0.2.4. Spoke-to-spoke traffic is dropped until an appliance with IP forwarding is deployed there. The appliance is not part of this repo.
 - SSH through Bastion to the spoke 1 VM worked: `Allow-Bastion-SSH` matched through `asg-web`.
+
+## Deploy
+
+```bash
+az group create --name rg-hubspoke --location centralindia
+az deployment group create --resource-group rg-hubspoke --template-file main.bicep
+```
+
+## Clean up
+
+Bastion is billed by the hour, so delete everything when you're done:
+
+```bash
+az group delete --name rg-hubspoke --yes --no-wait
+```
