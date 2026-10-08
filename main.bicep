@@ -60,6 +60,9 @@ resource spoke2Vnet 'Microsoft.Network/virtualNetworks@2024-05-01' = {
         name: 'snet-app'
         properties: {
           addressPrefix: '10.2.1.0/24'
+          networkSecurityGroup: {
+            id: nsgApp.id
+          }
         }
       }
     ]
@@ -111,5 +114,66 @@ resource spoke2ToHub 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2
     }
     allowVirtualNetworkAccess: true
     allowForwardedTraffic: true
+  }
+}
+
+resource asgApp 'Microsoft.Network/applicationSecurityGroups@2024-05-01' = {
+  name: 'asg-app'
+  location: location
+}
+
+resource nsgApp 'Microsoft.Network/networkSecurityGroups@2024-05-01' = {
+  name: 'nsg-app'
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'Allow-Web-To-App'
+        properties: {
+          priority: 100
+          direction: 'Inbound'
+          access: 'Allow'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          sourceAddressPrefix: '10.1.1.0/24'
+          destinationApplicationSecurityGroups: [
+            {
+              id: asgApp.id
+            }
+          ]
+          destinationPortRange: '8080'
+        }
+      }
+      {
+        name: 'Allow-Bastion-SSH'
+        properties: {
+          priority: 110
+          direction: 'Inbound'
+          access: 'Allow'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          sourceAddressPrefix: '10.0.1.0/26'
+          destinationApplicationSecurityGroups: [
+            {
+              id: asgApp.id
+            }
+          ]
+          destinationPortRange: '22'
+        }
+      }
+      {
+        name: 'Deny-VNet-Inbound'
+        properties: {
+          priority: 4000
+          direction: 'Inbound'
+          access: 'Deny'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: '*'
+          destinationPortRange: '*'
+        }
+      }
+    ]
   }
 }
