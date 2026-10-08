@@ -264,3 +264,37 @@ resource rtSpoke2 'Microsoft.Network/routeTables@2024-05-01' = {
     ]
   }
 }
+
+resource bastionPip 'Microsoft.Network/publicIPAddresses@2024-05-01' = {
+  name: 'pip-bastion'
+  location: location
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    publicIPAllocationMethod: 'Static'
+  }
+}
+
+resource bastion 'Microsoft.Network/bastionHosts@2024-05-01' = {
+  name: 'bas-hub'
+  location: location
+  sku: {
+    name: 'Basic'
+  }
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          subnet: {
+            id: '${hubVnet.id}/subnets/AzureBastionSubnet'
+          }
+          publicIPAddress: {
+            id: bastionPip.id
+          }
+        }
+      }
+    ]
+  }
+}
