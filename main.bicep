@@ -65,3 +65,51 @@ resource spoke2Vnet 'Microsoft.Network/virtualNetworks@2024-05-01' = {
     ]
   }
 }
+
+resource hubToSpoke1 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-05-01' = {
+  parent: hubVnet
+  name: 'hub-to-spoke1'
+  properties: {
+    remoteVirtualNetwork: {
+      id: spoke1Vnet.id
+    }
+    allowVirtualNetworkAccess: true
+    allowForwardedTraffic: true
+  }
+}
+
+resource spoke1ToHub 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-05-01' = {
+  parent: spoke1Vnet
+  name: 'spoke1-to-hub'
+  properties: {
+    remoteVirtualNetwork: {
+      id: hubVnet.id
+    }
+    allowVirtualNetworkAccess: true
+    allowForwardedTraffic: true
+  }
+}
+
+resource hubToSpoke2 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-05-01' = {
+  parent: hubVnet
+  name: 'hub-to-spoke2'
+  properties: {
+    remoteVirtualNetwork: {
+      id: spoke2Vnet.id
+    }
+    allowVirtualNetworkAccess: true
+    allowForwardedTraffic: true
+  }
+}
+
+resource spoke2ToHub 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-05-01' = {
+  parent: spoke2Vnet
+  name: 'spoke2-to-hub'
+  properties: {
+    remoteVirtualNetwork: {
+      id: hubVnet.id
+    }
+    allowVirtualNetworkAccess: true
+    allowForwardedTraffic: true
+  }
+}
