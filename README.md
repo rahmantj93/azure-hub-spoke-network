@@ -23,3 +23,12 @@ flowchart LR
   web -.->|UDR to spoke2| nva
   app -.->|UDR to spoke1| nva
 ```
+
+## Design decisions
+
+- **Non-overlapping /16 per VNet.** Peering requires address spaces that don't overlap.
+- **Peering in both directions.** One side alone stays Initiated. Forwarded traffic is allowed so a hub appliance can pass traffic between spokes.
+- **Route tables on each spoke.** Peering isn't transitive, so spoke-to-spoke traffic is sent to the hub appliance IP (10.0.2.4).
+- **ASGs as rule destinations.** Rules target the web or app servers as a group, not by IP. The web-to-app rule uses the web subnet range as its source, because a rule can't use ASGs on both sides across VNets.
+- **Explicit deny at priority 4000.** The default AllowVnetInBound (65000) allows all traffic from peered VNets. This rule closes that gap after the specific allows.
+- **Bastion instead of public IPs.** VMs have no public IPs; SSH is allowed only from AzureBastionSubnet.
